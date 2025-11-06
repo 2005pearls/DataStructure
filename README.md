@@ -20,5 +20,5 @@ The system includes time and space complexity analysis for each main function.
 | Member | Responsibilities |
 |:--|:--|
 | **Jana Almengash** | Product, Review, and CSV handling |
-| **Wsan Alamri** | Customer and Order operations |
+| **Wasan Alamri** | Customer and Order operations |
 | **Raghad Alqahtani** | Analytical queries, UML, and report |
