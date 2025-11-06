@@ -21,8 +21,4 @@ The system includes time and space complexity analysis for each main function.
 |:--|:--|
 | **Jana Almengash** | Product, Review, and CSV handling |
 | **Wsan Alamri** | Customer and Order operations |
-| **Raghad Alsubaie** | Analytical queries, UML, and report |
-
-All members contributed equally.
-
-## Project Structure
+| **Raghad Alqahtani** | Analytical queries, UML, and report |
