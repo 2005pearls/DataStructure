@@ -2,7 +2,7 @@ package javaapplication19;
 import java.io.File;
 import java.util.Scanner;
 public class Customers {
-private LinkedList<Customer> Customers
+private LinkedList<Customer> Customers;
         
 
 public Customers(){
@@ -124,3 +124,4 @@ public void readAllCustomers(String fileName) {
 
 
 }
+
