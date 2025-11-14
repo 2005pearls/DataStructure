@@ -8,7 +8,6 @@ import java.io.File;
 import java.util.Scanner;
 
 public class Product {
-    // instance fields
     private int productID;
     private int stock;
     private String name;
