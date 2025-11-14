@@ -1,58 +1,75 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package structurephase1;
+package draft;
 
 import java.io.File;
 import java.util.Scanner;
 
-/**
- *
- * @author janaalmengash
- */
 public class Reading {
-    public static void Load(String fileName) {
-        String line = null;
-        try {
-            File f = new File(fileName);
-            Scanner sc = new Scanner(f, "UTF-8");
 
-            if (sc.hasNextLine()) sc.nextLine();
-
-            while (sc.hasNextLine()) {
-                line = sc.nextLine();
-                if (line == null) continue;
-
-                line = line.trim();
-                if (line.length() < 3) {
-                    System.out.println("Empty line found, skipping this line = " + line);
-                    continue;
-                }
-
-                System.out.println(line);
-                String[] a = line.split(",", 2);
-                if (a.length < 2) {
-                    System.out.println("Bad line, skipping: " + line);
-                    continue;
-                }
-
-                String idStr   = a[0].trim();
-                String content = a[1].trim();
-
-                int id = Integer.parseInt(idStr); 
-
-                System.out.println("id = " + id + ", content = " + content);
+    // products.csv: id,name,price,stock 
+    public static void loadProducts(String file){
+        try (Scanner sc = new Scanner(new File(file), "UTF-8")){
+            System.out.println("\n# Loading products from: " + file);
+            if (sc.hasNextLine()) sc.nextLine(); // skip header يسويلها سكب
+            int cnt = 0;
+            while (sc.hasNextLine()){
+                String line = sc.nextLine().trim();
+                if (line.isEmpty()) continue;
+                Product p = Product.convert_String_to_product(line);
+                Product.addProduct(p);
+                cnt++;
             }
-
-            sc.close();
-        } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
-            System.out.println("Last line read = " + line);
+            System.out.println("✓ Products loaded: " + cnt);
+        }catch(Exception e){
+            System.out.println("✗ products load error: " + e.getMessage());
         }
     }
-    public static void main(String[] args) {
-        Load("reviews.csv");
+
+    // customers.csv: id,name,email
+    public static void loadCustomers(String file){
+        try (Scanner sc = new Scanner(new File(file), "UTF-8")){
+            System.out.println("\n# Loading customers from: " + file);
+            if (sc.hasNextLine()) sc.nextLine();
+            int cnt = 0;
+            while (sc.hasNextLine()){
+                String line = sc.nextLine().trim();
+                if (line.isEmpty()) continue;
+                Customer c = Customer.convert_String_to_Customer(line);
+                Customer.registerCustomer(c);
+                cnt++;
+            }
+            System.out.println("✓ Customers loaded: " + cnt);
+        }catch(Exception e){
+            System.out.println("✗ customers load error: " + e.getMessage());
+        }
     }
 
+    // reviews.csv: reviewId,productId,customerId,rating,comment
+    public static void loadReviews(String file){
+        try (Scanner sc = new Scanner(new File(file), "UTF-8")){
+            System.out.println("\n# Loading reviews from: " + file);
+            if (sc.hasNextLine()) sc.nextLine();
+            int cnt = 0;
+            while (sc.hasNextLine()){
+                String line = sc.nextLine().trim();
+                if (line.isEmpty()) continue;
+                Review r = Review.convert_String_to_Review(line);
+                // نضيف اليفيو للمنتج الي نبيه
+                Product p = Product.searchById(r.getProductID());
+                if (p != null){
+                    p.addReview(r);
+                    cnt++;
+                }else{
+                    System.out.println("Skip review "+r.getReviewID()+": product "+r.getProductID()+" not found");
+                }
+            }
+            System.out.println("✓ Reviews loaded: " + cnt);
+        }catch(Exception e){
+            System.out.println("✗ reviews load error: " + e.getMessage());
+        }
+    }
+
+    // orders.csv: orderId,customerId,status,yyyy-MM-dd
+    public static void loadOrders(String file){
+        Order.load_orders(file);
+    }
 }
