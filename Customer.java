@@ -2,123 +2,138 @@ package draft;
 
 import java.io.File;
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class Customer {
     private int customerID;
     private String name;
     private String email;
-    private LinkedList<Order> orders = new LinkedList<>();
-    // Static list for the all customers
-    private static LinkedList<Customer> allCustomers = new LinkedList<>();
-
+    private BST<Order> orders = new BST<>();
+    private static BST<Customer> customersTree = new BST<>();
+    
+    //  Constructors
     public Customer(int customerID, String name, String email) {
         this.customerID = customerID;
         this.name = name;
         this.email = email;
     }
 
-    // geters 
-    public int getCustomerID()  {
-        return customerID; }
-    
-    public String getName()     { 
-        return name; }
-    
-    public String getEmail()    { 
-        return email; }
-    
-    public LinkedList<Order> getOrders() { 
-        return orders; }
-    
-
-    //  setters 
-    public void setName(String name)   { 
-        this.name = name; }
-    
-    public void setEmail(String email) {
-        this.email = email; }
-
-    //  linked list for the Help 
-    private static void insertAtEnd(Customer c) {
-        if (allCustomers.empty())
-            allCustomers.insert(c);
-        
-        else {
-            allCustomers.findFirst();
-            
-            while (!allCustomers.last())
-            allCustomers.findNext();
-            
-            allCustomers.insert(c);
-        }
+    //  Getters
+    public int getCustomerID() {
+        return customerID;
     }
 
-    // register new customer 
+    public String getName() {
+        return name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public BST<Order> getOrders() {
+        return orders;
+    }
+
+    
+    //  Setters
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+
+    //  5 Insert Customer
     public static void registerCustomer(Customer c) {
-        if (searchById(c.getCustomerID()) != null) {
-           System.out.println("Customer with ID " + c.getCustomerID() + " already exists!");
+        int id = c.getCustomerID();
+
+        // نتأكد ما فيه عميل بنفس الـ ID
+        if (customersTree.findKey(id)) {
+            System.out.println("Customer with ID " + id + " already exists!");
             return;
         }
-        insertAtEnd(c);
-       System.out.println("Customer registered: " + c.getName());
+
+        // نفترض أن عندك في BST دالة: insert(int key, T data)
+        customersTree.insert(id, c);
+        System.out.println("Customer registered: " + c.getName());
     }
 
-    //  search by ID 
+    
+    // 5 Search Customer 
     public static Customer searchById(int id) {
-        if (allCustomers.empty()) return null;
-        allCustomers.findFirst();
-        while (true) {
-            Customer cur = allCustomers.retrieve();
-            if (cur.getCustomerID() == id) return cur;
-            if (allCustomers.last()) break;
-            allCustomers.findNext();
+        if (!customersTree.findKey(id)) {
+            return null;
         }
-        return null;
+        return customersTree.retrieve(); 
     }
+
+    // Advanced Query Requirements  4. List All Customers Sorted Alphabetically.
+    
+ public static void displayAllCustomers() {
+     
+    System.out.println("\n== All Customers ==");
+    if (customersTree.isEmpty()) {
+        System.out.println("No customers registered.");
+        return;
+    }
+    
+    ArrayList<Customer> list = new ArrayList<>();
+    collectCustomersInOrder(customersTree.getRoot(), list);
+    Collections.sort(list, (c1, c2) ->
+        c1.getName().compareToIgnoreCase(c2.getName())
+    );
+    for (Customer c : list) {
+        System.out.println(c);
+    }
+    }
+    
+    
+private static void collectCustomersInOrder(BSTNode<Customer> node, ArrayList<Customer> list) {
+    if (node == null) return;
+    
+    collectCustomersInOrder(node.left, list);
+    list.add(node.data);
+    collectCustomersInOrder(node.right, list);
+}
+   
 
     // Place a New Order 
-    public void placeOrder(Order o) {
-        // Add order to customer list because every customer has list of orders
-        if (orders.empty()) orders.insert(o);
-        else {
-            orders.findFirst();
-            while (!orders.last()) orders.findNext();
-            orders.insert(o);
-        }
-        System.out.println("Order placed for customer " + customerID + ": Order " + o.getOrderID());
+  public void placeOrder(Order o) {
+    orders.insert(o.getOrderID(), o);
+    System.out.println("Order placed for customer " + customerID +
+                       ": Order " + o.getOrderID());
+}
+
+
+    // 6 Customer Order History 
+  public void viewOrders() {
+    System.out.println("\n== Orders for " + name + " ==");
+
+    if (orders.isEmpty()) {
+        System.out.println("No orders yet.");
+        return;
     }
 
-    // view order history 
-    public void viewOrders() {
-        System.out.println("\n== Orders for " + name + " ==");
-        if (orders.empty()) {
-            System.out.println("No orders yet.");
-            return;
-        }
-        orders.findFirst();
-        while (true) {
-            Order o = orders.retrieve();
-            System.out.println(o);
-            if (orders.last()) break;
-            orders.findNext();
-        }
-    }
+    ArrayList<Order> list = new ArrayList<>();
+    collectOrdersInOrder(orders.getRoot(), list);
 
-    // display all customers 
-    public static void displayAllCustomers() {
-        System.out.println("\n== All Customers ==");
-        if (allCustomers.empty()) {
-            System.out.println("No customers registered.");
-            return;
-        }
-        allCustomers.findFirst();
-        while (true) {
-        Customer c = allCustomers.retrieve();
-           System.out.println("ID: " + c.getCustomerID() + " | Name: " + c.getName() + " | Email: " + c.getEmail());
-           if (allCustomers.last()) break;
-               allCustomers.findNext();
-        }
+    for (Order o : list) {
+     o.display();  
     }
+}
+private void collectOrdersInOrder(BSTNode<Order> node, ArrayList<Order> list) {
+    if (node == null) return;
+
+    collectOrdersInOrder(node.left, list);
+    list.add(node.data);  // هنا نضيف الـ Order نفسه
+    collectOrdersInOrder(node.right, list);
+}
+
+
 
     // Convert String to Customer 
     public static Customer convert_String_to_Customer(String line) {
@@ -140,8 +155,9 @@ public class Customer {
             while (sc.hasNextLine()) {
                 String line = sc.nextLine().trim();
                 if (line.isEmpty()) continue;
+
                 Customer c = convert_String_to_Customer(line);
-                registerCustomer(c);
+                registerCustomer(c); // يسجل في الـ BST
                 count++;
             }
             System.out.println("✓ Customers loaded: " + count);
@@ -156,6 +172,4 @@ public class Customer {
                " | Name: " + name +
                " | Email: " + email;
     }
-
-   
 }
