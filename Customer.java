@@ -1,5 +1,4 @@
-package draft;
-
+package javaapplication22;
 import java.io.File;
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -74,31 +73,64 @@ public class Customer {
     // Advanced Query Requirements  4. List All Customers Sorted Alphabetically.
     
  public static void displayAllCustomers() {
-     
-    System.out.println("\n== All Customers ==");
+  
     if (customersTree.isEmpty()) {
-        System.out.println("No customers registered.");
+        System.out.println("No customers available.");
         return;
     }
-    
-    ArrayList<Customer> list = new ArrayList<>();
-    collectCustomersInOrder(customersTree.getRoot(), list);
-    Collections.sort(list, (c1, c2) ->
-        c1.getName().compareToIgnoreCase(c2.getName())
-    );
-    for (Customer c : list) {
-        System.out.println(c);
-    }
-    }
-    
-    
-private static void collectCustomersInOrder(BSTNode<Customer> node, ArrayList<Customer> list) {
-    if (node == null) return;
-    
-    collectCustomersInOrder(node.left, list);
-    list.add(node.data);
-    collectCustomersInOrder(node.right, list);
+
+    // شجرة مؤقتة نرتب فيها العملاء حسب الحرف الأول من الاسم
+    BST<Customer> nameTree = new BST<>();
+
+    // نعبّي شجرة الأسماء من الشجرة الأصلية
+    insertCustomersByName(customersTree.getRoot(), nameTree);
+
+    System.out.println("\n-- Customers Sorted Alphabetically --");
+
+    // نطبع شجرة الأسماء In-order من A إلى Z
+    printNameTreeInOrder(nameTree.getRoot());
 }
+
+
+ // this method for ranking customers from A-Z
+private static void insertCustomersByName(BSTNode<Customer> node, BST<Customer> tempTree) {
+    if (node == null) {
+        return;
+    }
+    // نمر على الشجرة الأصلية In-order
+    insertCustomersByName(node.left, tempTree);
+
+    // العميل في هذه العقدة
+    Customer c = node.data;
+    String name = c.getName();
+    if (name != null && !name.isEmpty()) {
+        name = name.toLowerCase();
+       int first  = name.charAt(0);
+       int second = 0;
+       if (name.length() > 1) {
+       second = name.charAt(1);
+}
+
+int alphabeticalKey = first * 1000 + second;
+
+// ندخل العميل في الشجرة المؤقتة
+tempTree.insert(alphabeticalKey, c);
+
+    }
+    insertCustomersByName(node.right, tempTree);
+}
+
+    private static void printNameTreeInOrder(BSTNode<Customer> node) {
+    if (node == null) {
+        return;
+    }
+    printNameTreeInOrder(node.left);
+    Customer c = node.data;
+    System.out.println(c);   // هنا يستخدم toString()
+    printNameTreeInOrder(node.right);
+}
+
+    
    
 
     // Place a New Order 
@@ -118,19 +150,24 @@ private static void collectCustomersInOrder(BSTNode<Customer> node, ArrayList<Cu
         return;
     }
 
-    ArrayList<Order> list = new ArrayList<>();
-    collectOrdersInOrder(orders.getRoot(), list);
-
-    for (Order o : list) {
-     o.display();  
-    }
+    // نطبع الطلبات مباشرة باستخدام traversal على شجرة الطلبات
+    printOrdersInOrder(orders.getRoot());
 }
-private void collectOrdersInOrder(BSTNode<Order> node, ArrayList<Order> list) {
-    if (node == null) return;
 
-    collectOrdersInOrder(node.left, list);
-    list.add(node.data);  // هنا نضيف الـ Order نفسه
-    collectOrdersInOrder(node.right, list);
+private void printOrdersInOrder(BSTNode<Order> node) {
+    if (node == null) {
+        return;
+    }
+
+    // الفرع الأيسر
+    printOrdersInOrder(node.left);
+
+    // العقدة الحالية
+    Order o = node.data;
+    o.display();   // تستعرض تفاصيل الطلب
+
+    // الفرع الأيمن
+    printOrdersInOrder(node.right);
 }
 
 
@@ -173,3 +210,5 @@ private void collectOrdersInOrder(BSTNode<Order> node, ArrayList<Order> list) {
                " | Email: " + email;
     }
 }
+
+
