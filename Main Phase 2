@@ -363,7 +363,7 @@ public class Main {
                 int cid = promptInt("customer id: ");
                 int rating = promptInt("rating (1..5): ");
                 String comment = promptLine("comment: ");
-                // create and register review via Review.addReview
+                // create and save review 
                 Review.addReview(new Review(rid, pid, cid, rating, comment));
                 System.out.println("Review added.");
 
