@@ -9,12 +9,13 @@ import java.util.Scanner;
 
 public class Product {
 
+    //attributes
     private int productID;
     private int stock;
     private String name;
     private double price;
 
-    // reviews of this product
+    // reviews of this product itself
     private LinkedList<Review> reviews = new LinkedList<>();
 
     // tree for all products (key = productID)
@@ -52,6 +53,7 @@ public class Product {
         }
     }
 
+    //avg rate for product 
     public double getAverageRating() {
         if (reviews.empty()) return 0.0;
 
@@ -69,6 +71,7 @@ public class Product {
         return sum / count;
     }
 
+    // all reviews for product itself
     public void displayAllReviews() {
         if (reviews.empty()) {
             System.out.println("No reviews available for this product.");
@@ -85,7 +88,7 @@ public class Product {
         }
     }
 
-    // small display like in slides
+    // small display
     public void display() {
         System.out.println(this.toString());
     }
@@ -113,7 +116,7 @@ public class Product {
     }
 
     public static void addProduct(Product p) {
-        boolean didInsert = products.insert(p.getProductID(), p);
+        boolean didInsert = products.insert(p.getProductID(), p); //key(id) smth unique,,data
 
         if (didInsert) {
             System.out.println("Product added: " + p.getName());
@@ -148,6 +151,7 @@ public class Product {
 
 // traversing the bst
     
+    //displaying all products with their reviews
     public static void displayAllProducts() {
         System.out.println("\n== All Products ==");
         if (products.isEmpty()) {
@@ -170,6 +174,7 @@ public class Product {
         inOrder_all(p.right);
     }
 
+    //phase 1 track out of stock products
     public static void displayOutOfStock() {
         System.out.println("\nOut-of-stock products:");
         if (products.isEmpty()) {
@@ -192,9 +197,10 @@ public class Product {
         inOrder_out_of_stock(p.right);
     }
 
+    //search by name
     public static Product searchByName(String name) {
         if (products.isEmpty()) return null;
-        return searchByNameInorder(products.getRoot(), name);
+        return searchByNameInorder(products.getRoot(), name); //we start from root
     }
 
     private static Product searchByNameInorder(BSTNode<Product> p, String name) {
@@ -210,6 +216,7 @@ public class Product {
         return searchByNameInorder(p.right, name);
     }
 
+    //2nd query
     public static void listProductsInPriceRange(double min, double max) {
         System.out.println("\nProducts with price in [" + min + ", " + max + "]");
         if (products.isEmpty()) {
@@ -258,13 +265,13 @@ public class Product {
                 addProduct(p);
                 count++;
             }
-            System.out.println("Products loaded: " + count);
+           // System.out.println("Products loaded: " + count);
         } catch (Exception e) {
             System.out.println("Error reading file: " + e.getMessage());
         }
     }
 
-//top 3 by average rating
+//top 3 by average rating third query عدليها ********
 
     public static void top3ByAverageRating() {
         if (products.isEmpty()) {
@@ -318,7 +325,7 @@ public class Product {
 
 // فree review operations
 
-    // show customers who reviewed one product sorted by rating desc
+    // show customers who reviewed one product sorted by rating desc fifth query عدليها ******
     public static void showCustomersWhoReviewedProduct(int productId) {
         Product p = searchById(productId);
         if (p == null) {
@@ -366,7 +373,7 @@ public class Product {
         }
     }
 
-    // all reviews written by a given customer
+    // all reviews written by a given customer عدليها*******
     public static void printReviewsByCustomer(int customerId) {
         System.out.println("\nReviews by customer " + customerId + ":");
         if (products.isEmpty()) {
@@ -406,7 +413,7 @@ public class Product {
         inOrder_reviewsByCustomer(p.right, customerId, found);
     }
 
-// common items if their avg is high enough
+// common items if their avg is high enough phase 1 last query
     public static void commonReviewedProductsAbove(int custA,
                                                    int custB,
                                                    double threshold) {
