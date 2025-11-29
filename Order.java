@@ -15,7 +15,7 @@ private int orderID;
     
      private static BST<Order> ordersTree = new BST<>();
      
-     
+  
     private static class OrderItem {
         Product product;
         int qty;
@@ -24,7 +24,6 @@ private int orderID;
         
         double lineTotal() {
             return product.getPrice() * qty; }
-        
         
         void display() {
             System.out.println(" - " + product.getName() + " (x" + qty + ")  price=" + product.getPrice() +"  lineTotal=" + String.format("%.2f", lineTotal()));
@@ -126,7 +125,6 @@ private int orderID;
             System.out.println("qty must be > 0");
             return false;
         }
-
         Product p = Product.searchById(productId);
         if (p == null) {
             System.out.println("Product " + productId + " not found.");
@@ -144,7 +142,6 @@ private int orderID;
             while (!items.last()) items.findNext();
             items.insert(it);
         }
-
         totalPrice += it.lineTotal();
         p.setStock(p.getStock() - qty);
         return true;
@@ -159,7 +156,6 @@ private int orderID;
                 " | status: " + status +
                 " | customer: " + (customer != null ? customer.getName() : "null") +
                 " | total: " + String.format("%.2f", totalPrice));
-
         if (items.empty()) {
             System.out.println("  (no items)");
         } else {
@@ -192,28 +188,22 @@ private int orderID;
     try {
         LocalDate a = LocalDate.parse(fromYmd, DF);
         LocalDate b = LocalDate.parse(toYmd, DF);
-        
-       
-      
         if (a.isAfter(b)) {
           LocalDate t = a;
             a = b;
            b = t;
         }
        System.out.println ("\n== Orders between " + a + " and " + b + " ==");
-
         if (ordersTree.isEmpty()) {
            System.out.println("(none)");
             return;
         }
-        
-
+       
        boolean any =  ordersBetweenRec(ordersTree.getRoot(), a, b);
         if (!any) {
             System.out.println("(none)");
        }
 
-        
     } catch  (Exception e) {
           System.out.println("Error parsing dates: " + e.getMessage());
    }
@@ -224,14 +214,14 @@ private static boolean ordersBetweenRec(BSTNode<Order> p,  LocalDate a, LocalDat
     
     if (p == null) return false;
     boolean any = false;
-    any |= ordersBetweenRec(p.left, a, b);
+    if (ordersBetweenRec(p.left, a, b)) {
+    any = true;
+    }
     Order o = p.data;
     try {
-        String dateOnly = o.orderDate.contains(",")
-               ? o.orderDate.split(",")[1].trim()
-               : o.orderDate.trim();
+        String dateOnly = o.orderDate.contains(",") ? o.orderDate.split(",")[1].trim(): o.orderDate.trim();
         DateTimeFormatter ff = DateTimeFormatter.ofPattern("M/d/yyyy");
-         LocalDate d = LocalDate.parse(dateOnly, ff);
+        LocalDate d = LocalDate.parse(dateOnly, ff);
         if (!d.isBefore(a) && !d.isAfter(b)) {
              o.display();
              any = true;
@@ -239,13 +229,11 @@ private static boolean ordersBetweenRec(BSTNode<Order> p,  LocalDate a, LocalDat
     } catch  (Exception ex) {
           System.out.println("Bad date format for order " + o.orderID + ": " + o.orderDate);
     }
-    any |=  ordersBetweenRec(p.right , a, b);
+if (ordersBetweenRec(p.right, a, b)) {
+    any = true;
+}
     return  any;
 } 
-
-
-
-
 
 
 // method make sure for date format 
@@ -261,36 +249,58 @@ private static String formatDate(String  date) {
 
 
     //  CSV load that includes orderId and customerId and status and yyyy-MM-dd of date 
-    public static void load_orders(String  fileName) {
-        try (Scanner sc = new Scanner(new File(fileName), "UTF-8")) {
-            if (sc.hasNextLine()) sc.nextLine(); // skip header
-            int cnt = 0;
+   public static void load_orders(String fileName) {
+    try (Scanner sc = new Scanner(new File(fileName), "UTF-8")) {
+        if (sc.hasNextLine()) sc.nextLine(); // skip header
+        int cnt = 0;
 
-            while (sc.hasNextLine()) {
-                String line = sc.nextLine().trim();
-                if (line.isEmpty()) continue;
+        while (sc.hasNextLine()) {
+            String line = sc.nextLine().trim();
+            if (line.isEmpty()) continue;
 
-               String[] a = line.split(",", 4);
-               int oid = Integer.parseInt(a[0].trim());
-              int cid = Integer.parseInt(a[1].trim());
-             String status = a[2].trim();
-               String date = a[3].trim();
-
-               if (searchById(oid) != null) continue;
-
-             Customer c = Customer.searchById(cid);
-              if (c == null) {
-                   System.out.println("Skip order " + oid + ": customer " + cid + " not found.");
-                   continue;
-               }
-                Order o = new Order(oid, c, status, date);
-               registerOrder(o);
-               c.placeOrder(o);
-                cnt++;
+            String[] a = line.split(",", 6); 
+            if (a.length < 6) {
+                System.out.println("Skip invalid line: " + line);
+                continue;
             }
-        } catch (Exception e) {
-            System.out.println("✗ Error reading orders: " + e.getMessage());
+            
+            int oid = Integer.parseInt(a[0].trim());
+            int cid = Integer.parseInt(a[1].trim());
+            String productIdsStr = a[2].trim(); 
+            double totalPrice = Double.parseDouble(a[3].trim());
+            String date = a[4].trim();
+            String status = a[5].trim();
+
+            if (searchById(oid) != null) continue;
+            Customer c = Customer.searchById(cid);
+            if (c == null) {
+                System.out.println("Skip order " + oid + ": customer " + cid + " not found.");
+                continue;
+            }
+            
+            Order o = new Order(oid, c, status, date);
+            o.totalPrice = totalPrice; 
+            
+            if (!productIdsStr.isEmpty()) {
+                String[] productIds = productIdsStr.split(";");
+                for (String pidStr : productIds) {
+                    try {
+                        int pid = Integer.parseInt(pidStr.trim());
+                        o.addItemByProductId(pid, 1); 
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid product ID: " + pidStr + " in order " + oid);
+                    }
+                }
+            }
+            
+            registerOrder(o);
+            c.placeOrder(o);
+            cnt++;
         }
+        System.out.println("Loaded " + cnt + " orders with items.");
+    } catch (Exception e) {
+        System.out.println("✗ Error reading orders: " + e.getMessage());
     }
-    
 }
+}
+
