@@ -1,0 +1,121 @@
+package draft;
+
+import java.io.File;
+import java.util.Scanner;
+
+public class Review {
+    //attributes
+    private int reviewID;
+    private int productID;
+    private int customerID;
+    private int rating;      // 1–5
+    private String comment;
+
+    // bst for all reviews (key = reviewID)
+    private static BST<Review> allReviews = new BST<>();
+
+    public Review(int reviewID, int productID, int customerID, int rating, String comment) {
+        this.reviewID = reviewID;
+        this.productID = productID;
+        this.customerID = customerID;
+        this.rating = rating;
+        this.comment = comment;
+    }
+
+    // getters & setters 
+    public int getReviewID()   { return reviewID; }
+    public int getProductID()  { return productID; }
+    public int getCustomerID() { return customerID; }
+    public int getRating()     { return rating; }
+    public String getComment() { return comment; }
+
+    public void setRating(int rating)      { this.rating = rating; }
+    public void setComment(String comment) { this.comment = comment; }
+
+//bst operations
+    
+    public static Review searchByID(int id) {
+        if (!allReviews.findKey(id)) {
+            return null;
+        }
+        return allReviews.retrieve();
+    }
+
+
+    private static void registerReview(Review r) {
+        int id = r.getReviewID();
+        if (allReviews.findKey(id)) {
+            // if already exists do nothing
+            return;
+        }
+        allReviews.insert(id, r);
+    }
+
+    public static void addReview(Review r) {
+        if (searchByID(r.getReviewID()) != null) {
+            System.out.println("Review ID " + r.getReviewID() + " already exists!");
+            return;
+        }
+        registerReview(r);
+        Product p = Product.searchById(r.getProductID());
+        if (p != null) {
+            p.addReview(r);
+        } else {
+            System.out.println("Product " + r.getProductID()
+                    + " not found for review " + r.getReviewID());
+        }
+
+        System.out.println("Review added: " + r.getReviewID());
+    }
+
+    // edit review rating and comment
+    public static void editReview(int id, int newRating, String newComment) {
+        Review r = searchByID(id);
+        if (r == null) {
+            System.out.println("Review ID not found!");
+            return;
+        }
+        r.setRating(newRating);
+        r.setComment(newComment);
+        System.out.println("Review updated: " + id);
+    }
+
+//// traversing the bst
+ 
+    public static void displayAllReviews() {
+        System.out.println("\n== All Reviews ==");
+        if (allReviews.isEmpty()) {
+            System.out.println("No reviews.");
+            return;
+        }
+        inOrder_all(allReviews.getRoot());
+    }
+
+    private static void inOrder_all(BSTNode<Review> p) {
+        if (p == null) return;
+
+        inOrder_all(p.left);
+
+        Review r = p.data;
+        System.out.println("Review ID: " + r.getReviewID() +
+                           " | Product: " + r.getProductID() +
+                           " | Customer: " + r.getCustomerID() +
+                           " | Rating: " + r.getRating() +
+                           " | Comment: " + r.getComment());
+
+        inOrder_all(p.right);
+    }
+
+    
+    // format: reviewID,productID,customerID,rating,comment
+    public static Review convert_String_to_Review(String line) {
+        String[] a = line.split(",", 5);
+        return new Review(
+            Integer.parseInt(a[0].trim()),  // reviewID
+            Integer.parseInt(a[1].trim()),  // productID
+            Integer.parseInt(a[2].trim()),  // customerID
+            Integer.parseInt(a[3].trim()),  // rating
+            a[4].trim()                     // comment
+        );
+    }
+}
