@@ -1,4 +1,4 @@
-package ds2;
+package draft;
 
 import java.io.File;
 import java.util.Scanner;
@@ -110,7 +110,7 @@ public class Main {
     }
 
 
-    // the main menu start here
+    // the main menu starrt here
 
     private static void mainMenu() {
         while (true) {
@@ -274,7 +274,7 @@ public class Main {
 
 
     
-    // order menu
+    // order menu start here
     private static void ordersMenu() {
         while (true) {
             System.out.println("\n-- Orders --");
@@ -324,7 +324,7 @@ public class Main {
             } else if (c == 5) {
                 String a = promptLine("from (yyyy-MM-dd): ");
                 String b = promptLine("to   (yyyy-MM-dd): ");
-                // validate order of dates
+                // validate order of dates 
                 try {
                     LocalDate d1 = LocalDate.parse(a, DF), d2 = LocalDate.parse(b, DF);
                     if (d1.isAfter(d2)) { String t = a; a = b; b = t; }
