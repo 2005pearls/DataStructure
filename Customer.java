@@ -1,8 +1,6 @@
 package javaapplication22;
 import java.io.File;
 import java.util.Scanner;
-import java.util.ArrayList;
-import java.util.Collections;
 
 public class Customer {
     private int customerID;
@@ -49,14 +47,12 @@ public class Customer {
     //  5 Insert Customer
     public static void registerCustomer(Customer c) {
         int id = c.getCustomerID();
-
-        // نتأكد ما فيه عميل بنفس الـ ID
         if (customersTree.findKey(id)) {
             System.out.println("Customer with ID " + id + " already exists!");
             return;
         }
-
-        // نفترض أن عندك في BST دالة: insert(int key, T data)
+        
+// key=id , c=data 
         customersTree.insert(id, c);
         System.out.println("Customer registered: " + c.getName());
     }
@@ -73,34 +69,25 @@ public class Customer {
     // Advanced Query Requirements  4. List All Customers Sorted Alphabetically.
     
  public static void displayAllCustomers() {
-  
     if (customersTree.isEmpty()) {
         System.out.println("No customers available.");
         return;
     }
-
-    // شجرة مؤقتة نرتب فيها العملاء حسب الحرف الأول من الاسم
     BST<Customer> nameTree = new BST<>();
-
-    // نعبّي شجرة الأسماء من الشجرة الأصلية
+    
     insertCustomersByName(customersTree.getRoot(), nameTree);
-
     System.out.println("\n-- Customers Sorted Alphabetically --");
-
-    // نطبع شجرة الأسماء In-order من A إلى Z
     printNameTreeInOrder(nameTree.getRoot());
 }
 
 
- // this method for ranking customers from A-Z
+ // this method for customers from A-Z
 private static void insertCustomersByName(BSTNode<Customer> node, BST<Customer> tempTree) {
     if (node == null) {
         return;
     }
-    // نمر على الشجرة الأصلية In-order
+    
     insertCustomersByName(node.left, tempTree);
-
-    // العميل في هذه العقدة
     Customer c = node.data;
     String name = c.getName();
     if (name != null && !name.isEmpty()) {
@@ -110,23 +97,19 @@ private static void insertCustomersByName(BSTNode<Customer> node, BST<Customer> 
        if (name.length() > 1) {
        second = name.charAt(1);
 }
-
-int alphabeticalKey = first * 1000 + second;
-
-// ندخل العميل في الشجرة المؤقتة
-tempTree.insert(alphabeticalKey, c);
-
+       
+    int alphabeticalKey = first * 1000 + second;
+    tempTree.insert(alphabeticalKey, c);
     }
     insertCustomersByName(node.right, tempTree);
 }
-
     private static void printNameTreeInOrder(BSTNode<Customer> node) {
     if (node == null) {
         return;
     }
     printNameTreeInOrder(node.left);
     Customer c = node.data;
-    System.out.println(c);   // هنا يستخدم toString()
+    System.out.println(c);   // use of toString()
     printNameTreeInOrder(node.right);
 }
 
@@ -150,7 +133,7 @@ tempTree.insert(alphabeticalKey, c);
         return;
     }
 
-    // نطبع الطلبات مباشرة باستخدام traversal على شجرة الطلبات
+  
     printOrdersInOrder(orders.getRoot());
 }
 
@@ -158,51 +141,20 @@ private void printOrdersInOrder(BSTNode<Order> node) {
     if (node == null) {
         return;
     }
-
-    // الفرع الأيسر
     printOrdersInOrder(node.left);
-
-    // العقدة الحالية
     Order o = node.data;
-    o.display();   // تستعرض تفاصيل الطلب
-
-    // الفرع الأيمن
+    o.display();   
     printOrdersInOrder(node.right);
 }
 
 
 
     // Convert String to Customer 
-    public static Customer convert_String_to_Customer(String line) {
+   public static Customer convert_String_to_Customer(String line) {
         String[] a = line.split(",", 3);
-        return new Customer(
-            Integer.parseInt(a[0].trim()),
-            a[1].trim(),
-            a[2].trim()
-        );
+        return new Customer( Integer.parseInt(a[0].trim()), a[1].trim(),a[2].trim() );
     }
-
-    // load from CSV 
-    public static void load_customers(String fileName) {
-        try (Scanner sc = new Scanner(new File(fileName), "UTF-8")) {
-            System.out.println("\n# Reading customers file: " + fileName);
-            if (sc.hasNextLine()) sc.nextLine(); // skip header
-
-            int count = 0;
-            while (sc.hasNextLine()) {
-                String line = sc.nextLine().trim();
-                if (line.isEmpty()) continue;
-
-                Customer c = convert_String_to_Customer(line);
-                registerCustomer(c); // يسجل في الـ BST
-                count++;
-            }
-            System.out.println("✓ Customers loaded: " + count);
-        } catch (Exception e) {
-            System.out.println("✗ Error reading file: " + e.getMessage());
-        }
-    }
-
+    
     @Override
     public String toString() {
         return "Customer ID: " + customerID +
