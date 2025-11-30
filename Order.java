@@ -41,7 +41,7 @@ private int orderID;
         this.orderDate = LocalDate.now().format(DF);
         this.totalPrice = 0.0;
     }
-// create with manual date input 
+// create  date input 
 
     public Order(int orderID, Customer customer, String status, String ymd) {
         this.orderID   = orderID;
