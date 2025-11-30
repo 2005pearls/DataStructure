@@ -1,0 +1,543 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package ds2;
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+
+import java.io.File;
+import java.util.Scanner;
+
+public class Product {
+
+    private int productID;
+    private int stock;
+    private String name;
+    private double price;
+
+    // reviews of this product
+    private LinkedList<Review> reviews = new LinkedList<>();
+
+    // tree for all products (key = productID)
+    private static BST<Product> products = new BST<>();
+
+    // constructor
+    public Product(int productID, int stock, String name, double price) {
+        this.productID = productID;
+        this.stock = stock;
+        this.name = name;
+        this.price = price;
+    }
+
+    // getters
+    public int getProductID()   { return productID; }
+    public int getStock()       { return stock; }
+    public String getName()     { return name; }
+    public double getPrice()    { return price; }
+    public LinkedList<Review> getReviews() { return reviews; }
+
+    // setters
+    public void setProductID(int productID) { this.productID = productID; }
+    public void setStock(int stock)         { this.stock = stock; }
+    public void setName(String name)        { this.name = name; }
+    public void setPrice(double price)      { this.price = price; }
+
+    // reviews 
+    public void addReview(Review r) {
+        if (reviews.empty()) {
+            reviews.insert(r);
+        } else {
+            reviews.findFirst();
+            while (!reviews.last()) reviews.findNext();
+            reviews.insert(r);
+        }
+    }
+
+    public double getAverageRating() {
+        if (reviews.empty()) return 0.0;
+
+        reviews.findFirst();
+        double sum = 0;
+        int count = 0;
+
+        while (true) {
+            Review rv = reviews.retrieve();
+            sum += rv.getRating();
+            count++;
+            if (reviews.last()) break;
+            reviews.findNext();
+        }
+        return sum / count;
+    }
+
+    public void displayAllReviews() {
+        if (reviews.empty()) {
+            System.out.println("No reviews available for this product.");
+            return;
+        }
+        System.out.println("Reviews for product: " + name);
+        reviews.findFirst();
+        while (true) {
+            Review r = reviews.retrieve();
+            System.out.println("Rating: " + r.getRating()
+                    + " | Comment: " + r.getComment());
+            if (reviews.last()) break;
+            reviews.findNext();
+        }
+    }
+
+    // small display like in slides
+    public void display() {
+        System.out.println(this.toString());
+    }
+
+    @Override
+    public String toString() {
+        return "Product ID: " + productID +
+               "\nName: " + name +
+               "\nPrice: " + price + " SR" +
+               "\nStock: " + stock +
+               "\nAvg Rating: " + String.format("%.1f", getAverageRating()) +
+               "\n----------------------";
+    }
+
+    // bst operations
+    public static Product searchById(int id) {
+        if (products.isEmpty()) return null;
+
+        boolean found = products.findKey(id);   
+        if (found) {
+            return products.retrieve();
+        } else {
+            return null;
+        }
+    }
+
+    public static void addProduct(Product p) {
+        boolean didInsert = products.insert(p.getProductID(), p);
+
+        if (didInsert) {
+            System.out.println("Product added: " + p.getName());
+        } else {
+            System.out.println("Product with ID "
+                    + p.getProductID() + " already exists!");
+        }
+    }
+
+    public static void removeProduct(int id) {
+        boolean removed = products.removeKey(id);
+
+        if (removed) {
+            System.out.println("Product removed: " + id);
+        } else {
+            System.out.println("Product ID not found!");
+        }
+    }
+
+    public static void updateProduct(int id, Product data) {
+        Product old = searchById(id);
+
+        if (old == null) {
+            System.out.println("Product ID not found!");
+        } else {
+            old.setName(data.getName());
+            old.setPrice(data.getPrice());
+            old.setStock(data.getStock());
+            System.out.println("Product updated: " + id);
+        }
+    }
+
+// traversing the bst
+    
+    public static void displayAllProducts() {
+        System.out.println("\n== All Products ==");
+        if (products.isEmpty()) {
+            System.out.println("No products available.");
+            return;
+        }
+        inOrder_all(products.getRoot());
+    }
+
+    private static void inOrder_all(BSTNode<Product> p) {
+        if (p == null) return;
+
+        inOrder_all(p.left);
+
+        Product pr = p.data;
+        pr.display();
+        pr.displayAllReviews();
+        System.out.println("******************************");
+
+        inOrder_all(p.right);
+    }
+
+    public static void displayOutOfStock() {
+        System.out.println("\nOut-of-stock products:");
+        if (products.isEmpty()) {
+            System.out.println("no products exist");
+            return;
+        }
+        inOrder_out_of_stock(products.getRoot());
+    }
+
+    private static void inOrder_out_of_stock(BSTNode<Product> p) {
+        if (p == null) return;
+
+        inOrder_out_of_stock(p.left);
+
+        if (p.data.getStock() == 0) {
+            System.out.println("key = " + p.key);
+            p.data.display();
+        }
+
+        inOrder_out_of_stock(p.right);
+    }
+
+    public static Product searchByName(String name) {
+        if (products.isEmpty()) return null;
+        return searchByNameInorder(products.getRoot(), name);
+    }
+
+    private static Product searchByNameInorder(BSTNode<Product> p, String name) {
+        if (p == null) return null;
+
+        Product left = searchByNameInorder(p.left, name);
+        if (left != null) return left;
+
+        if (p.data.getName().equalsIgnoreCase(name)) {
+            return p.data;
+        }
+
+        return searchByNameInorder(p.right, name);
+    }
+
+    public static void listProductsInPriceRange(double min, double max) {
+        System.out.println("\nProducts with price in [" + min + ", " + max + "]");
+        if (products.isEmpty()) {
+            System.out.println("No products.");
+            return;
+        }
+        inOrder_price_range(products.getRoot(), min, max);
+    }
+
+    private static void inOrder_price_range(BSTNode<Product> p,double min, double max) {
+        if (p == null) return;
+
+        inOrder_price_range(p.left, min, max);
+
+        double pr = p.data.getPrice();
+        if (pr >= min && pr <= max) {
+            p.data.display();
+            System.out.println("---------------------");
+        }
+
+        inOrder_price_range(p.right, min, max);
+    }
+
+//csv loading
+
+    // format: id,name,price,stock
+    public static Product convert_String_to_product(String line) {
+        String[] a = line.split(",", 4);
+        int id    = Integer.parseInt(a[0].trim());
+        String nm = a[1].trim();
+        double pr = Double.parseDouble(a[2].trim());
+        int st    = Integer.parseInt(a[3].trim());
+        return new Product(id, st, nm, pr);
+    }
+
+    public static void load_products(String fileName) {
+        try (Scanner read = new Scanner(new File(fileName), "UTF-8")) {
+            System.out.println("\n# Reading file: " + fileName);
+            if (read.hasNextLine()) read.nextLine(); // skip header
+            int count = 0;
+            while (read.hasNextLine()) {
+                String line = read.nextLine().trim();
+                if (line.isEmpty()) continue;
+                Product p = convert_String_to_product(line);
+                addProduct(p);
+                count++;
+            }
+            System.out.println("Products loaded: " + count);
+        } catch (Exception e) {
+            System.out.println("Error reading file: " + e.getMessage());
+        }
+    }
+
+//top 3 by average rating
+public static void top3ByAverageRating() {
+    if (products.isEmpty()) {
+        System.out.println("No products.");
+        return;
+    }
+
+    // Track top 3
+    Product first = null;
+    Product second = null;
+    Product third = null;
+
+    // Fill them using recursion
+    Product[] top = new Product[3]; 
+    findTop3(products.getRoot(), top);
+
+    first = top[0];
+    second = top[1];
+    third = top[2];
+
+    System.out.println("\n== Top 3 Products by Avg Rating ==");
+
+    if (first != null) {
+        System.out.println("#1");
+        first.display();
+    }
+    if (second != null) {
+        System.out.println("#2");
+        second.display();
+    }
+    if (third != null) {
+        System.out.println("#3");
+        third.display();
+    }
+}
+
+private static void findTop3(BSTNode<Product> node, Product[] top) {
+    if (node == null) return;
+
+    findTop3(node.left, top);
+
+    Product cur = node.data;
+    double avg = cur.getAverageRating();
+
+    // Insert into top[0], top[1], top[2]
+    if (top[0] == null || avg > top[0].getAverageRating()) {
+        top[2] = top[1];
+        top[1] = top[0];
+        top[0] = cur;
+    }
+    else if (top[1] == null || avg > top[1].getAverageRating()) {
+        top[2] = top[1];
+        top[1] = cur;
+    }
+    else if (top[2] == null || avg > top[2].getAverageRating()) {
+        top[2] = cur;
+    }
+
+    findTop3(node.right, top);
+}
+
+
+// فree review operations
+
+    // show customers who reviewed one product sorted by rating desc
+    public static void showCustomersWhoReviewedProduct(int productId) {
+        Product p = searchById(productId);
+        if (p == null) {
+            System.out.println("Product not found.");
+            return;
+        }
+
+        LinkedList<Review> rs = p.getReviews(); 
+        
+        if (rs.empty()) {
+            System.out.println("No reviews for this product.");
+            return;
+        } //to be copied in an array
+        rs.findFirst();
+        int count = 0;
+        while (true) {
+            count++;
+            if (rs.last()) break;
+            rs.findNext();
+        }
+
+        Review[] arr = new Review[count]; // rs arr
+        int i = 0;
+        rs.findFirst();
+        while (true) {
+            arr[i++] = rs.retrieve();
+            if (rs.last()) break;
+            rs.findNext();
+        }
+        
+        for (int a = 0; a < count - 1; a++) { //sorting
+            for (int b = 0; b < count - 1 - a; b++) {
+                if (arr[b].getRating() < arr[b + 1].getRating()) {
+                    Review tmp = arr[b];
+                    arr[b] = arr[b + 1];
+                    arr[b + 1] = tmp;
+                }
+            }
+        }
+
+        System.out.println("\nCustomers who reviewed product " + productId);
+        for (int k = 0; k < count; k++) {
+            Review r = arr[k];
+            System.out.println("Customer ID: " + r.getCustomerID()
+                    + " | Rating: " + r.getRating()
+                    + " | Comment: " + r.getComment());
+        }
+    }
+
+    // all reviews written by a given customer
+    public static void printReviewsByCustomer(int customerId) {
+        System.out.println("\nReviews by customer " + customerId + ":");
+        if (products.isEmpty()) {
+            System.out.println("No products.");
+            return;
+        }
+        boolean[] found = { false };
+        inOrder_reviewsByCustomer(products.getRoot(), customerId, found);
+        if (!found[0]) {
+            System.out.println("No reviews from this customer.");
+        }
+    }
+
+    private static void inOrder_reviewsByCustomer(BSTNode<Product> p,
+                                                  int customerId,
+                                                  boolean[] found) {
+        if (p == null) return;
+
+        inOrder_reviewsByCustomer(p.left, customerId, found);
+
+        LinkedList<Review> rs = p.data.getReviews();
+        if (!rs.empty()) {
+            rs.findFirst();
+            while (true) {
+                Review r = rs.retrieve();
+                if (r.getCustomerID() == customerId) {
+                    System.out.println("Product: " + p.data.getName()
+                            + " | rating: " + r.getRating()
+                            + " | comment: " + r.getComment());
+                    found[0] = true;
+                }
+                if (rs.last()) break;
+                rs.findNext();
+            }
+        }
+
+        inOrder_reviewsByCustomer(p.right, customerId, found);
+    }
+
+// common items if their avg is high enough
+    public static void commonReviewedProductsAbove(int custA,
+                                                   int custB,
+                                                   double threshold) {
+        System.out.println("\nCommon products for " + custA + " and " + custB
+                + " with avg >= " + threshold);
+        if (products.isEmpty()) {
+            System.out.println("No products.");
+            return;
+        }
+        boolean[] any = { false };
+        inOrder_common(products.getRoot(), custA, custB, threshold, any);
+        if (!any[0]) {
+            System.out.println("None.");
+        }
+    }
+
+    private static void inOrder_common(BSTNode<Product> p,
+                                       int custA,
+                                       int custB,
+                                       double threshold,
+                                       boolean[] any) {
+        if (p == null) return;
+
+        inOrder_common(p.left, custA, custB, threshold, any);
+
+        boolean aReviewed = false, bReviewed = false;
+        LinkedList<Review> rs = p.data.getReviews();
+        if (!rs.empty()) {
+            rs.findFirst();
+            while (true) {
+                Review r = rs.retrieve();
+                if (r.getCustomerID() == custA) aReviewed = true;
+                if (r.getCustomerID() == custB) bReviewed = true;
+                if (rs.last()) break;
+                rs.findNext();
+            }
+        }
+
+        if (aReviewed && bReviewed && p.data.getAverageRating() >= threshold) {
+            p.data.display();
+            System.out.println("-------------------");
+            any[0] = true;
+        }
+
+        inOrder_common(p.right, custA, custB, threshold, any);
+    }
+//رغد هنا جاني ايرور في الماين شوفي وش مشكلته المفروض مانحتاج لنكد ليست خلاص
+    /*// ===== helper for Main: build a LinkedList snapshot (in-order) =====
+    static LinkedList<Product> getInventoryForMainOnly() {
+        LinkedList<Product> list = new LinkedList<>();
+        buildListInOrder(products.getRoot(), list);
+        return list;
+    }
+
+    private static void buildListInOrder(BSTNode<Product> p,
+                                         LinkedList<Product> list) {
+        if (p == null) return;
+
+        buildListInOrder(p.left, list);
+
+        if (list.empty()) {
+            list.insert(p.data);
+        } else {
+            list.findFirst();
+            while (!list.last()) list.findNext();
+            list.insert(p.data);
+        }
+
+        buildListInOrder(p.right, list);
+    }*/
+
+/*// ======================= TEMP TEST (PHASE II TEST) =======================
+    public static void main(String[] args) {
+    System.out.println("\n===== PRODUCT BST SELF-TEST START =====\n");
+
+    addProduct(new Product(40, 0, "Eggs", 12.0));
+    addProduct(new Product(10, 5, "Bread", 5.0));
+    addProduct(new Product(30, 3, "Milk", 10.5));
+    addProduct(new Product(20, 7, "Juice", 8.0));
+    addProduct(new Product(50, 9, "Cheese", 18.0));
+    addProduct(new Product(25, 2, "Yogurt", 6.0));
+
+    System.out.println("\n-- ALL PRODUCTS (IN-ORDER) --");
+    displayAllProducts();
+
+    System.out.println("\n-- SEARCH TEST --");
+    Product p = searchById(20);
+    System.out.println("Searching for ID=20 → " +
+            (p != null ? p.getName() : "Not found"));
+
+    p = searchById(90);
+    System.out.println("Searching for ID=90 → " +
+            (p != null ? "ERROR (should not exist)" : "Correct: Not found"));
+
+    System.out.println("\n-- UPDATE TEST (ID=30) --");
+    updateProduct(30, new Product(30, 10, "Milk Premium", 15.0));
+    displayAllProducts();
+
+    System.out.println("\n-- REMOVE TEST (ID=10) --");
+    removeProduct(10);
+    displayAllProducts();
+
+    System.out.println("\n-- OUT OF STOCK TEST --");
+    displayOutOfStock();
+    
+    System.out.println("\n-- PRICE RANGE 5 → 12 --");
+    listProductsInPriceRange(5, 12);
+
+    System.out.println("\n-- TOP 3 RATING TEST --");
+    Product p1 = searchById(40); p1.addReview(new Review(1,40,100,5,"Nice"));
+    Product p2 = searchById(30); p2.addReview(new Review(2,30,101,4,"Good"));
+    Product p3 = searchById(50); p3.addReview(new Review(3,50,102,2,"Bad"));
+    Product p4 = searchById(20); p4.addReview(new Review(4,20,103,3,"OK"));
+
+    top3ByAverageRating();
+
+    System.out.println("\n===== PRODUCT BST SELF-TEST END =====\n");
+}*/
+}
