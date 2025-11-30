@@ -4,40 +4,36 @@
  */
 package draft;
 
-class BSTNode<T> {
+class BSTNode<T>{
     public int key;
     public T data;
-    public BSTNode<T> left, right;
-
-    public BSTNode(int k, T val) {
-        this.key  = k;
-        this.data = val;
-        left = right = null;
-    }
+    public BSTNode<T> left , right;
+    
+    public BSTNode(int key ,T data){
+     this.key=key;
+     this.data=data;
+     left= right=null;
+    }  
 }
 
-public class BST<T> {
-
-    private BSTNode<T> root, current;
-
+public class BST <T>{
+    private BSTNode<T> root ,current ;
+    
     public BST() {
         root = null;
-        current = null;
+        current=null;
     }
-    
     public boolean isEmpty() {
         return root == null;
     }
-
-    public boolean full() {
+     public boolean full() {
         return false;
     }
-
-    public T retrieve() {
+      public  T retrieve() {
         return current.data;
     }
-
-    public boolean findKey(int k) {
+      
+      public boolean findKey(int k) {
     if (isEmpty())         
         return false;
     BSTNode<T> p = root, q = root;
@@ -55,9 +51,8 @@ public class BST<T> {
     current = q;
     return false;
 }
-
-   
-public boolean insert(int k, T val) {
+      
+    public boolean insert(int k, T val) {
     BSTNode<T> p, q = current;
     if (findKey(k)) {          
         current = q;          
@@ -76,8 +71,7 @@ public boolean insert(int k, T val) {
         return true;
     }
 }
-//node has 0 or 1 child
-private void deleteNode(BSTNode<T> n, BSTNode<T> parent) {
+   private void deleteNode(BSTNode<T> n, BSTNode<T> parent) {
     BSTNode<T> child;
     if (n.left != null)
         child = n.left;
@@ -92,7 +86,26 @@ private void deleteNode(BSTNode<T> n, BSTNode<T> parent) {
             parent.right = child;
     }
 }
-    public boolean removeKey(int k) {
+   
+   
+      // /////// helping methods
+public void inOrder() {
+    if (root == null)
+        System.out.println("empty tree");
+    else
+        inOrder(root);
+}
+
+// recursive in-order traversal
+private void inOrder(BSTNode<T> p) {
+    if (p == null) return;
+
+    inOrder(p.left);                          
+    System.out.print("key= " + p.key);       
+    System.out.println();                    
+    inOrder(p.right);                         
+}
+public boolean removeKey(int k) {
 
     // Search for k
     BSTNode<T> p = root;     
@@ -134,7 +147,19 @@ private void deleteNode(BSTNode<T> n, BSTNode<T> parent) {
     return false;   // not found
 }
 
-    public BSTNode<T> getRoot() {
-        return root;
-    }
+public void findRoot() {
+    current = root;
 }
+
+public int curkey() {
+    return current.key;
+}
+
+public T curData() {
+    return current.data;
+}
+
+  public BSTNode<T> getRoot() {
+    return root;
+}
+    
